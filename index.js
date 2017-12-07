@@ -59,7 +59,7 @@ function configure (new_config) {
 
 function generate_token (scopes) {
     const scopes_string = _(scopes).sort().sortedUniq().join(' ');
-    const cached_token = _cache_get('client', scopes_string);
+    const cached_token_result = _cache_get('client', scopes_string);
     const payload = {
         client_id: config.client_id,
         client_secret: config.client_secret,
@@ -67,19 +67,19 @@ function generate_token (scopes) {
         scopes: scopes_string
     };
 
-    if (!cached_token) {
+    if (!cached_token_result) {
         return cudl.post
             .to(config.base_url + config.path + '/oauth/token')
             .send(payload)
             .promise()
             .then(result => {
-                _cache_set('client', scopes_string, result.access_token, config.client_expiry);
+                _cache_set('client', scopes_string, result, config.client_expiry);
 
-                return result.access_token;
+                return result;
             });
     }
 
-    return Promise.resolve(cached_token);
+    return Promise.resolve(cached_token_result);
 }
 
 function clear_server_cache () {
