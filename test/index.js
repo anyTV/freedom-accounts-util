@@ -85,7 +85,7 @@ describe('accounts client', () => {
             .post(configuration.path + '/oauth/token', payload)
             .reply(200, {access_token: 'jrrtoken'});
 
-        accounts.clear_cache();
+        accounts.clear_cache('client');
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -197,7 +197,9 @@ describe('verify scopes', () => {
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
-            error.message.should.equal('You need at least one of the ff. scopes to access this endpoint: ' + scopes.join(' '));
+            error.message.should.equal(
+                'You need at least one of the ff. scopes to access this endpoint: ' + scopes.join(' ')
+            );
             accounts_nock.isDone().should.equal(true);
         });
     });
