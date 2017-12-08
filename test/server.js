@@ -1,11 +1,13 @@
 'use strict';
 
 const accounts = require('../index.js');
+const cache = require('../src/cache');
 
 const chai = require('chai');
 const chai_as_promised = require('chai-as-promised');
 const nock = require('nock');
 const httpMocks = require('node-mocks-http');
+const moment = require('moment');
 
 
 chai.should();
@@ -23,6 +25,8 @@ const scopes = ['https://frnky.api.tm/cms'];
 
 describe('verify_scopes', () => {
 
+    const error_handler = error => (error ? Promise.reject(error) : Promise.resolve());
+
     accounts.configure(configuration);
 
     it('should fail without a provided access token', () => {
@@ -33,11 +37,7 @@ describe('verify_scopes', () => {
         });
 
         return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
+            request, null, error_handler
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
@@ -59,11 +59,7 @@ describe('verify_scopes', () => {
 
 
         return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
+            request, null, error_handler
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
@@ -86,11 +82,7 @@ describe('verify_scopes', () => {
 
 
         return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
+            request, null, error_handler
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
@@ -113,11 +105,7 @@ describe('verify_scopes', () => {
 
 
         return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
+            request, null, error_handler
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
@@ -132,7 +120,10 @@ describe('verify_scopes', () => {
         let accounts_nock = nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
             .query({access_token: 'jrrtoken'})
-            .reply(200, {scopes: scopes.join(' ')});
+            .reply(200, {
+                date_expiration: moment().add(30, 'minute').format('x'),
+                scopes: scopes.join(' ')
+            });
 
         const request = httpMocks.createRequest({
             method: 'GET',
@@ -158,7 +149,10 @@ describe('verify_scopes', () => {
         let accounts_nock = nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
             .query({access_token: 'jrrtoken'})
-            .reply(200, {scopes: scopes.join(' ')});
+            .reply(200, {
+                date_expiration: moment().add(30, 'minute').format('x'),
+                scopes: scopes.join(' ')
+            });
 
         const request = httpMocks.createRequest({
             method: 'GET',
@@ -168,15 +162,49 @@ describe('verify_scopes', () => {
 
 
         return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
+            request, null, error_handler
         ).catch(error => {
             error.should.not.exist();
         }).then(() => {
             accounts_nock.isDone().should.not.equal(true);
+            nock.cleanAll();
+        });
+    });
+
+    it('should request again with expired access token', () => {
+        cache.clear_cache('server');
+
+        let accounts_nock = nock(configuration.base_url)
+            .get(configuration.path + '/oauth/tokeninfo')
+            .query({access_token: 'jrrtoken'})
+            .reply(200, {
+                date_expiration: moment().subtract(30, 'minute').format('x'),
+                scopes: scopes.join(' ')
+            });
+
+        let accounts_expired_nock = nock(configuration.base_url)
+            .get(configuration.path + '/oauth/tokeninfo')
+            .query({access_token: 'jrrtoken'})
+            .reply(200, {
+                date_expiration: moment().subtract(30, 'minute').format('x'),
+                scopes: scopes.join(' ')
+            });
+
+        const request = httpMocks.createRequest({
+            method: 'GET',
+            url: '/test',
+            headers: {'Access-Token': 'jrrtoken'}
+        });
+
+
+        return accounts.verify_scopes(scopes)(
+            request, null, error_handler
+        ).then(() => {
+            accounts_nock.isDone().should.equal(true);
+        }).then(accounts.verify_scopes(scopes)(
+            request, null, error_handler
+        )).then(() => {
+            accounts_expired_nock.isDone().should.equal(true);
         });
     });
 });
