@@ -26,7 +26,7 @@ const nocks = {
     token_info: access_token => {
         return nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
-            .query({access_token})
+            .query({access_token});
     }
 };
 

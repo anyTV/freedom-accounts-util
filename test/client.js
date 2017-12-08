@@ -37,7 +37,7 @@ const payloads = {
 const nocks = {
     token: payload => {
         return nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads[payload])
+            .post(configuration.path + '/oauth/token', payloads[payload]);
     }
 };
 
