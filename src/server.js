@@ -83,7 +83,7 @@ function check_token_validity ({result, access_token, required_scopes}) {
         }
 
         const result_scopes = result.scopes.split(' ');
-        const has_valid_scopes = _.find(required_scopes, scope => _.includes(result_scopes, scope));
+        const has_valid_scopes = _.intersection(result_scopes, required_scopes).length;
 
         if (has_valid_scopes) {
             return resolve(result);
