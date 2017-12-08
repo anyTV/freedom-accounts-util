@@ -24,11 +24,11 @@ const config = {
     client_secret: ''
 };
 
-function _cache_get(category, key, fallback = null) {
+function _cache_get (category, key, fallback = null) {
     const cache_record = cache[category][key];
 
-    if(cache_record) {
-        if(!moment(cache_record.expiration).isBefore(moment())) {
+    if (cache_record) {
+        if (!moment(cache_record.expiration).isBefore(moment())) {
             return cache_record.value;
         }
 
@@ -38,7 +38,7 @@ function _cache_get(category, key, fallback = null) {
     return fallback;
 }
 
-function _cache_set(category, key, value, expiry) {
+function _cache_set (category, key, value, expiry) {
     cache[category][key] = {
         expiration: moment().add(expiry, 'seconds'),
         value: value
@@ -48,11 +48,11 @@ function _cache_set(category, key, value, expiry) {
 function configure (new_config) {
     _.merge(config, new_config);
 
-    if(config.client_expiry === null) {
+    if (config.client_expiry === null) {
         config.client_expiry = 600;
     }
 
-    if(config.server_expiry === null) {
+    if (config.server_expiry === null) {
         config.server_expiry = 600;
     }
 }
