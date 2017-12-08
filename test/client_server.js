@@ -187,7 +187,7 @@ describe('verify scopes', () => {
         ).catch(error => {
             error.should.have.property('message');
             error.message.should.be.a('string');
-            error.message.should.equal('Access token is missing.');
+            error.message.should.equal('Access token is required.');
         });
     });
 
