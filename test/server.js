@@ -14,13 +14,13 @@ chai.should();
 chai.use(chai_as_promised);
 
 const configuration = {
-    base_url: 'https://accounts.freedom.tm',
-    path: '/api/v2',
-    client_id: 'devtest',
-    client_secret: 'devtest'
+    base_url: 'https://localhost',
+    path: '/api',
+    client_id: 'test_id',
+    client_secret: 'test_secret'
 };
 
-const scopes = ['https://frnky.api.tm/cms'];
+const scopes = ['https://localhost/scope'];
 
 
 describe('verify_scopes', () => {
