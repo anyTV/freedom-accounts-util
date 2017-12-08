@@ -39,7 +39,7 @@ function check_input (access_token) {
 }
 
 function get_token_info (access_token) {
-    const cached_token_info_result = cache.get('client', access_token);
+    const cached_token_info_result = cache.get('server', access_token);
 
     if (!cached_token_info_result) {
         return cudl.get
@@ -47,7 +47,9 @@ function get_token_info (access_token) {
             .send({access_token: access_token})
             .promise()
             .then(result => {
-                cache.set('server', access_token, result, config.server_expiry);
+                if (result.scopes) {
+                    cache.set('server', access_token, result, config.server_expiry);
+                }
 
                 return result;
             })

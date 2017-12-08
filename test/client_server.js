@@ -1,6 +1,7 @@
 'use strict';
 
 const accounts = require('../index.js');
+const cache = require('../src/cache');
 
 const chai = require('chai');
 const chai_as_promised = require('chai-as-promised');
@@ -193,13 +194,13 @@ describe('verify scopes', () => {
     it('should forward remote failure', () => {
         let accounts_nock = nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
-            .query({access_token: 'jrrtoken'})
+            .query({access_token: 'notjrrtoken'})
             .reply(500, {message: 'random server error'});
 
         const request = httpMocks.createRequest({
             method: 'GET',
             url: '/test',
-            headers: {'Access-Token': 'jrrtoken'}
+            headers: {'Access-Token': 'notjrrtoken'}
         });
 
 
@@ -220,13 +221,13 @@ describe('verify scopes', () => {
     it('should fail without returned scopes', () => {
         let accounts_nock = nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
-            .query({access_token: 'jrrtoken'})
+            .query({access_token: 'notjrrtoken'})
             .reply(200, {});
 
         const request = httpMocks.createRequest({
             method: 'GET',
             url: '/test',
-            headers: {'Access-Token': 'jrrtoken'}
+            headers: {'Access-Token': 'notjrrtoken'}
         });
 
 
@@ -247,13 +248,13 @@ describe('verify scopes', () => {
     it('should fail without any of the required scopes', () => {
         let accounts_nock = nock(configuration.base_url)
             .get(configuration.path + '/oauth/tokeninfo')
-            .query({access_token: 'jrrtoken'})
+            .query({access_token: 'notjrrtoken'})
             .reply(200, {scopes: 'http://non.existing/scope'});
 
         const request = httpMocks.createRequest({
             method: 'GET',
             url: '/test',
-            headers: {'Access-Token': 'jrrtoken'}
+            headers: {'Access-Token': 'notjrrtoken'}
         });
 
 
@@ -296,6 +297,32 @@ describe('verify scopes', () => {
             error.should.not.exist();
         }).then(() => {
             accounts_nock.isDone().should.equal(true);
+        });
+    });
+
+    it('should succeed with cached access token info', () => {
+        let accounts_nock = nock(configuration.base_url)
+            .get(configuration.path + '/oauth/tokeninfo')
+            .query({access_token: 'jrrtoken'})
+            .reply(200, {scopes: scopes.join(' ')});
+
+        const request = httpMocks.createRequest({
+            method: 'GET',
+            url: '/test',
+            headers: {'Access-Token': 'jrrtoken'}
+        });
+
+
+        return accounts.verify_scopes(scopes)(
+            request,
+            null,
+            error => {
+                return error ? Promise.reject(error) : Promise.resolve();
+            }
+        ).catch(error => {
+            error.should.not.exist();
+        }).then(() => {
+            accounts_nock.isDone().should.not.equal(true);
         });
     });
 });
