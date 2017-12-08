@@ -9,5 +9,6 @@ module.exports = {
     configure: config.configure,
     verify_scopes: server.verify_scopes,
     generate_token: client.generate_token,
+    refresh_token: client.refresh_token,
     clear_cache: cache.clear_cache
 };

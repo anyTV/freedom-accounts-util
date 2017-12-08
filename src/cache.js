@@ -5,10 +5,11 @@ const moment = require('moment');
 module.exports = {
     get,
     set,
+    get_cache,
     clear_cache
 };
 
-let cache = {
+const cache = {
     server: {},
     client: {}
 };
@@ -32,6 +33,10 @@ function set (category, key, value, expiry) {
         expiration: moment().add(expiry, 'seconds'),
         value: value
     };
+}
+
+function get_cache (category) {
+    return cache[category];
 }
 
 function clear_cache (category) {
