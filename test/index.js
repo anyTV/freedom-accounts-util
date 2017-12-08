@@ -52,7 +52,7 @@ describe('accounts client', () => {
             .post(configuration.path + '/oauth/token', payload)
             .reply(200, {access_token: 'jrrtoken'});
 
-        accounts.configure({client_expiry: 600});
+        accounts.configure({client_expiry: 300});
 
         return accounts.generate_token(scopes)
             .then(result => {

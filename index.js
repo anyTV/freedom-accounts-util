@@ -50,11 +50,11 @@ function configure (new_config) {
     _.merge(config, new_config);
 
     if (config.client_expiry === null) {
-        config.client_expiry = 600;
+        config.client_expiry = 300;
     }
 
     if (config.server_expiry === null) {
-        config.server_expiry = 600;
+        config.server_expiry = 300;
     }
 }
 
