@@ -7,8 +7,8 @@ const config = {
     path: '',
     client_id: '',
     client_secret: '',
-    client_expiry: 300,
-    server_expiry: 300,
+    client_expiry: 300, // in seconds
+    server_expiry: 300, // in seconds
     configure: configure
 };
 

@@ -16,10 +16,11 @@ yarn add freedom-accounts-util
 ```
 const accounts = require('freedom-accounts-util');
 
-accounts.configure({base_url: '', path: '', client_id: '', client_secret: ''});
+accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300});
 // or
 accounts.configure(config.ACCOUNTS);
 ```
+Note: Client and server expiry are in seconds.
 
 ## Usage:
 For Express Servers:
