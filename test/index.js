@@ -140,10 +140,9 @@ describe('verify scopes', () => {
                 return error ? Promise.reject(error) : Promise.resolve();
             }
         ).catch(error => {
-            error.should.have.property('response');
-            error.response.should.have.property('message');
-            error.response.message.should.be.a('string');
-            error.response.message.should.equal('random server error');
+            error.should.have.property('message');
+            error.message.should.be.a('string');
+            error.message.should.equal('random server error');
             accounts_nock.isDone().should.equal(true);
         });
     });

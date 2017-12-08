@@ -50,7 +50,13 @@ function get_token_info (access_token) {
                 cache.set('server', access_token, result, config.server_expiry);
 
                 return result;
-            });
+            })
+            .catch(error => Promise.reject(
+                _.has(error, 'response.message')
+                    ? error.response
+                    : error
+                )
+            );
     }
 
     return Promise.resolve(cached_token_info_result);
