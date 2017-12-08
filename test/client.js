@@ -34,13 +34,19 @@ const payloads = {
     }
 };
 
+const nocks = {
+    token: payload => {
+        return nock(configuration.base_url)
+            .post(configuration.path + '/oauth/token', payloads[payload])
+    }
+};
+
 describe('generate_token', () => {
 
     accounts.configure(configuration);
 
     it('should get access token with specified scope', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
         accounts.configure({client_expiry: 0});
@@ -55,8 +61,7 @@ describe('generate_token', () => {
     });
 
     it('should get expired access token again with specified scope', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
         accounts.configure({client_expiry: 300});
@@ -71,8 +76,7 @@ describe('generate_token', () => {
     });
 
     it('should get cached access token with specified scope', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
         return accounts.generate_token(scopes)
@@ -87,8 +91,7 @@ describe('generate_token', () => {
     });
 
     it('should not get cached access token when cached is cleared', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
         accounts.clear_cache('client');
@@ -110,12 +113,10 @@ describe('refresh_token', () => {
     accounts.configure(configuration);
 
     it('should properly refresh token', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken', refresh_token: 'jrrrefreshtoken'});
 
-        let accounts_refresh_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.refresh_token)
+        let accounts_refresh_nock = nocks.token('refresh_token')
             .reply(200, {access_token: 'freshjrrtoken', refresh_token: 'jrrrefreshtoken'});
 
         accounts.clear_cache('client');
@@ -147,9 +148,11 @@ describe('refresh_token', () => {
     });
 
     it('should properly update cache of refreshed token', () => {
-        let accounts_nock = nock(configuration.base_url)
-            .post(configuration.path + '/oauth/token', payloads.client_credentials)
+        let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken', refresh_token: 'jrrrefreshtoken'});
+
+        let accounts_refresh_nock = nocks.token('refresh_token')
+            .reply(200, {access_token: 'freshjrrtoken', refresh_token: 'jrrrefreshtoken'});
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -160,6 +163,7 @@ describe('refresh_token', () => {
                 result.refresh_token.should.be.a('string');
                 result.refresh_token.should.equal('jrrrefreshtoken');
                 accounts_nock.isDone().should.not.equal(true);
+                accounts_refresh_nock.isDone().should.not.equal(true);
 
                 nock.cleanAll();
             });
