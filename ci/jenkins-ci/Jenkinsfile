@@ -1,0 +1,138 @@
+/**
+* For more info about the Jenkinsfile usage, visit:
+* https://jenkins.io/doc/book/pipeline/jenkinsfile/
+*
+* For more info about the syntax and commands, visit:
+* https://jenkins.io/doc/book/pipeline/syntax/
+*/
+
+pipeline {
+
+    /**
+     * Build Actions
+     */
+    agent any
+
+    environment {
+        CI_FILE_DIR = './ci'
+    }
+
+    stages {
+        stage('Preparing script files') {
+            steps {
+              sh 'sudo chmod +x ' + env.CI_FILE_DIR + '/scripts/*.sh || true'
+            }
+
+        }
+
+        stage('Installing deps') {
+            /**
+             * This section SHOULD ONLY include script for installation of modules, packages, libraries, etc.
+             * Make the installation grouped per interface. e.g. frontend, backend, system, etc
+             */
+            steps {
+                script {
+                    if (fileExists(env.CI_FILE_DIR + '/scripts/setup.sh')) {
+                        def shell_script = readFile env.CI_FILE_DIR + '/scripts/setup.sh'
+                        sh shell_script
+                    }
+                }
+            }
+
+        }
+
+        stage('Starting application') {
+            /**
+             * This section SHOULD ONLY include script that needs to be executed before running tests.
+             * Remove this section if not needed.
+             */
+            steps {
+                script {
+                    if (fileExists(env.CI_FILE_DIR + '/scripts/build.sh')) {
+                        def shell_script = readFile env.CI_FILE_DIR + '/scripts/build.sh'
+                        sh shell_script
+                    }
+                }
+            }
+
+        }
+
+        stage('Running tests') {
+            /**
+             * This section SHOULD ONLY include script for running of unit tests and nothing more
+             */
+            steps {
+                script {
+                    if (fileExists(env.CI_FILE_DIR + '/scripts/test.sh')) {
+                        def shell_script = readFile env.CI_FILE_DIR + '/scripts/test.sh'
+                        sh shell_script
+                    }
+                }
+            }
+
+        }
+
+        stage('Deployment') {
+            /**
+             * This section SHOULD ONLY include script for deployment
+             */
+            steps {
+                script {
+                    if (fileExists(env.CI_FILE_DIR + '/scripts/deploy.sh')) {
+                        def shell_script = readFile env.CI_FILE_DIR + '/scripts/deploy.sh'
+                        sh shell_script
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    /**
+     * Post-build Actions
+     */
+    post {
+        failure {
+
+            //Checks if the current branch is a critical branch
+            script {
+                def configString = readFile env.CI_FILE_DIR + '/config.json'
+
+                def config = readJSON text: configString
+
+                def criticalBranches = config['critical_branch']
+
+                def emailRecipients = 'ci-error@freedom.tm'
+
+                for (def email in config['email']) {
+                    emailRecipients += ';' + email
+                }
+
+                /**
+                 * if branch is critical, send emails to:
+                 * - Developers who were involved in the last build
+                 * - Developers who are suspected to have caused the failing build
+                 * - The SME (Specified in [optional])
+                 */
+                if (criticalBranches.contains(env.BRANCH_NAME)) {
+                    emailext (
+                        subject: "CI BUILD FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                        body: """
+                            CI BUILD FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]
+                            BRANCH NAME: ${env.BRANCH_NAME}
+
+                            Check console output at ${env.BUILD_URL}
+                            """,
+                        recipientProviders: [[$class: 'CulpritsRecipientProvider']],
+
+                        to: emailRecipients
+                    )
+
+                }
+            }
+
+        }
+    }
+
+}
