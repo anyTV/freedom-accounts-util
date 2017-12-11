@@ -9,6 +9,7 @@ const config = {
     client_secret: '',
     client_expiry: 300, // in seconds
     server_expiry: 300, // in seconds
+    disable_caching: false,
     configure: configure
 };
 

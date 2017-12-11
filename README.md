@@ -16,11 +16,13 @@ yarn add freedom-accounts-util
 ```
 const accounts = require('freedom-accounts-util');
 
-accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300});
+accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300, disable_caching: false});
 // or
 accounts.configure(config.ACCOUNTS);
 ```
-Note: Client and server expiry are in seconds.
+Notes:
+* Client and server expiry are in seconds. 
+* `disable_caching` disables caching when true (useful for tests).
 
 ## Usage:
 For Express Servers:

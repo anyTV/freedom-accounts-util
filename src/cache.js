@@ -2,6 +2,8 @@
 
 const moment = require('moment');
 
+const config = require('./config');
+
 module.exports = {
     get,
     set,
@@ -18,7 +20,7 @@ const cache = {
 function get (category, key, fallback = null) {
     const cache_record = cache[category][key];
 
-    if (cache_record) {
+    if (!config.disable_caching && cache_record) {
         if (!moment(cache_record.expiration).isBefore(moment())) {
             return cache_record.value;
         }
@@ -30,10 +32,12 @@ function get (category, key, fallback = null) {
 }
 
 function set (category, key, value, expiry) {
-    cache[category][key] = {
-        expiration: moment().add(expiry, 'seconds'),
-        value: value
-    };
+    if (!config.disable_caching) {
+        cache[category][key] = {
+            expiration: moment().add(expiry, 'seconds'),
+            value: value
+        };
+    }
 }
 
 function forget (category, key) {
