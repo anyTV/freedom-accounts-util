@@ -38,8 +38,7 @@ function generate_token (scopes) {
 }
 
 function refresh_token (refresh_token) {
-    const client_cache = cache.get_cache('client');
-    const scopes_string = _.findKey(client_cache, {value: {refresh_token}});
+    const scopes_string = cache.find_key('client', {refresh_token});
     const payload = {
         client_id: config.client_id,
         client_secret: config.client_secret,

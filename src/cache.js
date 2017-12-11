@@ -1,6 +1,7 @@
 'use strict';
 
 const moment = require('moment');
+const _ = require('lodash');
 
 const config = require('./config');
 
@@ -9,7 +10,8 @@ module.exports = {
     set,
     forget,
     get_cache,
-    clear_cache
+    clear_cache,
+    find_key
 };
 
 const cache = {
@@ -50,4 +52,8 @@ function get_cache (category) {
 
 function clear_cache (category) {
     cache[category] = {};
+}
+
+function find_key (category, value) {
+    return _.findKey(cache[category], {value});
 }

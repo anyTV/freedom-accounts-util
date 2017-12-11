@@ -65,4 +65,9 @@ describe('cache', function () {
 
         config.configure({disable_caching: false});
     });
+
+    it('should find key with specified value', function () {
+        cache.find_key('client', 'cvalue').should.equal('client_key');
+        cache.find_key('server', 'svalue').should.equal('server_key');
+    });
 });
