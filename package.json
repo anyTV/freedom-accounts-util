@@ -3,7 +3,16 @@
   "version": "1.0.0",
   "description": "Utility helper for OAuth2.0 calls to Freedom! Accounts",
   "main": "index.js",
-  "author": "MCN Freedom! Tech. Inc.",
+  "author": "MCN Freedom! Tech. Inc. <development@freedom.tm>",
+  "bugs": {
+    "url": "https://github.com/anyTV/freedom-accounts-util/issues"
+  },
+  "homepage": "https://github.com/anyTV/freedom-accounts-util",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anyTV/freedom-accounts-util.git"
+  },
+  "keywords": ["accounts", "anytv", "freedom"],
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
