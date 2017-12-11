@@ -18,7 +18,7 @@ function verify_scopes (required_scopes) {
                 req.client_id = result.client_id;
                 next();
             })
-            .catch(error => next(error));
+            .catch(next);
     };
 }
 
