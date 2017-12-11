@@ -1,7 +1,6 @@
 'use strict';
 
 const accounts = require('../index.js');
-const cache = require('../src/cache');
 
 const chai = require('chai');
 const chai_as_promised = require('chai-as-promised');
@@ -30,11 +29,27 @@ const nocks = {
     }
 };
 
+const responses = {
+    valid_token_info: {
+        date_expiration: moment().add(30, 'minute').format('x'),
+        scopes: scopes.join(' ')
+    },
+    expired_token_info: {
+        date_expiration: moment().format('x'),
+        scopes: scopes.join(' ')
+    }
+};
+
 describe('verify_scopes', function () {
 
     const error_handler = error => (error ? Promise.reject(error) : Promise.resolve());
 
     accounts.configure(configuration);
+
+    beforeEach(function () {
+        accounts.clear_cache('server');
+        nock.cleanAll();
+    });
 
     it('should fail without a provided access token', function () {
         const request = httpMocks.createRequest({
@@ -119,10 +134,7 @@ describe('verify_scopes', function () {
 
     it('should succeed with proper provided access token', function () {
         let accounts_nock = nocks.token_info('jrrtoken')
-            .reply(200, {
-                date_expiration: moment().add(30, 'minute').format('x'),
-                scopes: scopes.join(' ')
-            });
+            .reply(200, responses.valid_token_info);
 
         const request = httpMocks.createRequest({
             method: 'GET',
@@ -131,25 +143,18 @@ describe('verify_scopes', function () {
         });
 
 
-        return accounts.verify_scopes(scopes)(
-            request,
-            null,
-            error => {
-                return error ? Promise.reject(error) : Promise.resolve();
-            }
-        ).catch(error => {
-            error.should.not.exist();
-        }).then(() => {
-            accounts_nock.isDone().should.equal(true);
-        });
+        return accounts.verify_scopes(scopes)(request, null, error_handler)
+            .then(() => {
+                accounts_nock.isDone().should.equal(true);
+            });
     });
 
     it('should succeed with cached access token info', function () {
         let accounts_nock = nocks.token_info('jrrtoken')
-            .reply(200, {
-                date_expiration: moment().add(30, 'minute').format('x'),
-                scopes: scopes.join(' ')
-            });
+            .reply(200, responses.valid_token_info);
+
+        let accounts_renock = nocks.token_info('jrrtoken')
+            .reply(200, responses.valid_token_info);
 
         const request = httpMocks.createRequest({
             method: 'GET',
@@ -158,30 +163,23 @@ describe('verify_scopes', function () {
         });
 
 
-        return accounts.verify_scopes(scopes)(
-            request, null, error_handler
-        ).catch(error => {
-            error.should.not.exist();
-        }).then(() => {
-            accounts_nock.isDone().should.not.equal(true);
-            nock.cleanAll();
-        });
+        return accounts.verify_scopes(scopes)(request, null, error_handler)
+            .then(() => {
+                accounts_nock.isDone().should.equal(true);
+            })
+            .then(accounts.verify_scopes(scopes).bind({}, request, null, error_handler))
+            .then(() => {
+                accounts_renock.isDone().should.not.equal(true);
+            });
     });
 
     it('should request again with expired access token', function () {
-        cache.clear_cache('server');
 
         let accounts_nock = nocks.token_info('jrrtoken')
-            .reply(200, {
-                date_expiration: moment().subtract(30, 'minute').format('x'),
-                scopes: scopes.join(' ')
-            });
+            .reply(200, responses.expired_token_info);
 
         let accounts_expired_nock = nocks.token_info('jrrtoken')
-            .reply(200, {
-                date_expiration: moment().subtract(30, 'minute').format('x'),
-                scopes: scopes.join(' ')
-            });
+            .reply(200, responses.expired_token_info);
 
         const request = httpMocks.createRequest({
             method: 'GET',

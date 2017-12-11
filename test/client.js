@@ -45,11 +45,15 @@ describe('generate_token', function () {
 
     accounts.configure(configuration);
 
+    beforeEach(function () {
+        accounts.configure({client_expiry: 300});
+        accounts.clear_cache('client');
+        nock.cleanAll();
+    });
+
     it('should get access token with specified scope', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
-
-        accounts.configure({client_expiry: 0});
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -64,7 +68,10 @@ describe('generate_token', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
-        accounts.configure({client_expiry: 300});
+        let accounts_renock = nocks.token('client_credentials')
+            .reply(200, {access_token: 'jrrtoken'});
+
+        accounts.configure({client_expiry: 0});
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -72,6 +79,15 @@ describe('generate_token', function () {
                 result.access_token.should.be.a('string');
                 result.access_token.should.equal('jrrtoken');
                 accounts_nock.isDone().should.equal(true);
+
+                return scopes;
+            })
+            .then(accounts.generate_token)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('jrrtoken');
+                accounts_renock.isDone().should.equal(true);
             });
     });
 
@@ -79,22 +95,8 @@ describe('generate_token', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
-        return accounts.generate_token(scopes)
-            .then(result => {
-                result.should.have.property('access_token');
-                result.access_token.should.be.a('string');
-                result.access_token.should.equal('jrrtoken');
-                accounts_nock.isDone().should.not.equal(true);
-
-                nock.cleanAll();
-            });
-    });
-
-    it('should not get cached access token when cached is cleared', function () {
-        let accounts_nock = nocks.token('client_credentials')
+        let accounts_renock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
-
-        accounts.clear_cache('client');
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -103,7 +105,41 @@ describe('generate_token', function () {
                 result.access_token.should.equal('jrrtoken');
                 accounts_nock.isDone().should.equal(true);
 
-                nock.cleanAll();
+                return scopes;
+            })
+            .then(accounts.generate_token)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('jrrtoken');
+                accounts_renock.isDone().should.not.equal(true);
+            });
+    });
+
+    it('should not get cached access token when cached is cleared', function () {
+        let accounts_nock = nocks.token('client_credentials')
+            .reply(200, {access_token: 'jrrtoken'});
+
+        let accounts_renock = nocks.token('client_credentials')
+            .reply(200, {access_token: 'jrrtoken'});
+
+        return accounts.generate_token(scopes)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('jrrtoken');
+                accounts_nock.isDone().should.equal(true);
+
+                accounts.clear_cache('client');
+
+                return scopes;
+            })
+            .then(accounts.generate_token)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('jrrtoken');
+                accounts_renock.isDone().should.equal(true);
             });
     });
 });
@@ -112,14 +148,17 @@ describe('refresh_token', function () {
 
     accounts.configure(configuration);
 
+    beforeEach(function () {
+        accounts.clear_cache('client');
+        nock.cleanAll();
+    });
+
     it('should properly refresh token', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken', refresh_token: 'jrrrefreshtoken'});
 
         let accounts_refresh_nock = nocks.token('refresh_token')
             .reply(200, {access_token: 'freshjrrtoken', refresh_token: 'jrrrefreshtoken'});
-
-        accounts.clear_cache('client');
 
         return accounts.generate_token(scopes)
             .then(result => {
@@ -154,7 +193,22 @@ describe('refresh_token', function () {
         let accounts_refresh_nock = nocks.token('refresh_token')
             .reply(200, {access_token: 'freshjrrtoken', refresh_token: 'jrrrefreshtoken'});
 
+        let accounts_rerefresh_nock = nocks.token('refresh_token')
+            .reply(200, {access_token: 'veryfreshjrrtoken', refresh_token: 'jrrrefreshtoken'});
+
         return accounts.generate_token(scopes)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('jrrtoken');
+                result.should.have.property('refresh_token');
+                result.refresh_token.should.be.a('string');
+                result.refresh_token.should.equal('jrrrefreshtoken');
+                accounts_nock.isDone().should.equal(true);
+
+                return result.refresh_token;
+            })
+            .then(accounts.refresh_token)
             .then(result => {
                 result.should.have.property('access_token');
                 result.access_token.should.be.a('string');
@@ -162,10 +216,19 @@ describe('refresh_token', function () {
                 result.should.have.property('refresh_token');
                 result.refresh_token.should.be.a('string');
                 result.refresh_token.should.equal('jrrrefreshtoken');
-                accounts_nock.isDone().should.not.equal(true);
-                accounts_refresh_nock.isDone().should.not.equal(true);
+                accounts_refresh_nock.isDone().should.equal(true);
 
-                nock.cleanAll();
+                return result.refresh_token;
+            })
+            .then(accounts.refresh_token)
+            .then(result => {
+                result.should.have.property('access_token');
+                result.access_token.should.be.a('string');
+                result.access_token.should.equal('veryfreshjrrtoken');
+                result.should.have.property('refresh_token');
+                result.refresh_token.should.be.a('string');
+                result.refresh_token.should.equal('jrrrefreshtoken');
+                accounts_rerefresh_nock.isDone().should.equal(true);
             });
     });
 });

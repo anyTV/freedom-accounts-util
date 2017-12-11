@@ -12,15 +12,14 @@ chai.use(chai_as_promised);
 
 describe('cache', function () {
 
-    cache.clear_cache('client');
-    cache.clear_cache('server');
-
-    it('should set cached value', function () {
+    beforeEach(function () {
+        cache.clear_cache('client');
+        cache.clear_cache('server');
         cache.set('client', 'client_key', 'cvalue', 100);
         cache.set('server', 'server_key', 'svalue', 100);
     });
 
-    it('should get cached value', function () {
+    it('should set and get cached value', function () {
         cache.get('client', 'client_key').should.equal('cvalue');
         cache.get('server', 'server_key').should.equal('svalue');
     });
@@ -46,9 +45,6 @@ describe('cache', function () {
     });
 
     it('should clear whole category cache', function () {
-        cache.set('client', 'client_key', 'cvalue', 100);
-        cache.set('server', 'server_key', 'svalue', 100);
-
         cache.clear_cache('client');
         cache.get('client', 'client_key', 'cfallback').should.equal('cfallback');
         cache.get('server', 'server_key', 'sfallback').should.equal('svalue');
