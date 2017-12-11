@@ -41,11 +41,11 @@ const nocks = {
     }
 };
 
-describe('generate_token', () => {
+describe('generate_token', function () {
 
     accounts.configure(configuration);
 
-    it('should get access token with specified scope', () => {
+    it('should get access token with specified scope', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
@@ -60,7 +60,7 @@ describe('generate_token', () => {
             });
     });
 
-    it('should get expired access token again with specified scope', () => {
+    it('should get expired access token again with specified scope', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
@@ -75,7 +75,7 @@ describe('generate_token', () => {
             });
     });
 
-    it('should get cached access token with specified scope', () => {
+    it('should get cached access token with specified scope', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
@@ -90,7 +90,7 @@ describe('generate_token', () => {
             });
     });
 
-    it('should not get cached access token when cached is cleared', () => {
+    it('should not get cached access token when cached is cleared', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken'});
 
@@ -108,11 +108,11 @@ describe('generate_token', () => {
     });
 });
 
-describe('refresh_token', () => {
+describe('refresh_token', function () {
 
     accounts.configure(configuration);
 
-    it('should properly refresh token', () => {
+    it('should properly refresh token', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken', refresh_token: 'jrrrefreshtoken'});
 
@@ -147,7 +147,7 @@ describe('refresh_token', () => {
             });
     });
 
-    it('should properly update cache of refreshed token', () => {
+    it('should properly update cache of refreshed token', function () {
         let accounts_nock = nocks.token('client_credentials')
             .reply(200, {access_token: 'jrrtoken', refresh_token: 'jrrrefreshtoken'});
 

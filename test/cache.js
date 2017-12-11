@@ -10,22 +10,22 @@ const chai_as_promised = require('chai-as-promised');
 chai.should();
 chai.use(chai_as_promised);
 
-describe('cache', () => {
+describe('cache', function () {
 
     cache.clear_cache('client');
     cache.clear_cache('server');
 
-    it('should set cached value', () => {
+    it('should set cached value', function () {
         cache.set('client', 'client_key', 'cvalue', 100);
         cache.set('server', 'server_key', 'svalue', 100);
     });
 
-    it('should get cached value', () => {
+    it('should get cached value', function () {
         cache.get('client', 'client_key').should.equal('cvalue');
         cache.get('server', 'server_key').should.equal('svalue');
     });
 
-    it('should get whole cache', () => {
+    it('should get whole cache', function () {
         const client_cache = cache.get_cache('client');
         client_cache.should.have.property('client_key');
         client_cache.client_key.should.have.property('value');
@@ -37,7 +37,7 @@ describe('cache', () => {
         server_cache.server_key.value.should.equal('svalue');
     });
 
-    it('should forget cached value', () => {
+    it('should forget cached value', function () {
         cache.forget('client', 'client_key');
         cache.get('client', 'client_key', 'cfallback').should.equal('cfallback');
 
@@ -45,7 +45,7 @@ describe('cache', () => {
         cache.get('server', 'server_key', 'sfallback').should.equal('sfallback');
     });
 
-    it('should clear whole category cache', () => {
+    it('should clear whole category cache', function () {
         cache.set('client', 'client_key', 'cvalue', 100);
         cache.set('server', 'server_key', 'svalue', 100);
 
@@ -59,7 +59,7 @@ describe('cache', () => {
 
     });
 
-    it('should not cache when disabled', () => {
+    it('should not cache when disabled', function () {
         config.configure({disable_caching: true});
 
         cache.set('client', 'client_key', 'cvalue', 100);

@@ -30,13 +30,13 @@ const nocks = {
     }
 };
 
-describe('verify_scopes', () => {
+describe('verify_scopes', function () {
 
     const error_handler = error => (error ? Promise.reject(error) : Promise.resolve());
 
     accounts.configure(configuration);
 
-    it('should fail without a provided access token', () => {
+    it('should fail without a provided access token', function () {
         const request = httpMocks.createRequest({
             method: 'GET',
             url: '/test',
@@ -52,7 +52,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should forward remote failure', () => {
+    it('should forward remote failure', function () {
         let accounts_nock = nocks.token_info('notjrrtoken')
             .reply(500, {message: 'random server error'});
 
@@ -73,7 +73,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should fail without returned scopes', () => {
+    it('should fail without returned scopes', function () {
         let accounts_nock = nocks.token_info('notjrrtoken')
             .reply(200, {});
 
@@ -94,7 +94,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should fail without any of the required scopes', () => {
+    it('should fail without any of the required scopes', function () {
         let accounts_nock = nocks.token_info('notjrrtoken')
             .reply(200, {scopes: 'http://non.existing/scope'});
 
@@ -117,7 +117,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should succeed with proper provided access token', () => {
+    it('should succeed with proper provided access token', function () {
         let accounts_nock = nocks.token_info('jrrtoken')
             .reply(200, {
                 date_expiration: moment().add(30, 'minute').format('x'),
@@ -144,7 +144,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should succeed with cached access token info', () => {
+    it('should succeed with cached access token info', function () {
         let accounts_nock = nocks.token_info('jrrtoken')
             .reply(200, {
                 date_expiration: moment().add(30, 'minute').format('x'),
@@ -168,7 +168,7 @@ describe('verify_scopes', () => {
         });
     });
 
-    it('should request again with expired access token', () => {
+    it('should request again with expired access token', function () {
         cache.clear_cache('server');
 
         let accounts_nock = nocks.token_info('jrrtoken')
