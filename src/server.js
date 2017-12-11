@@ -32,12 +32,12 @@ function check_scopes (request, required_scopes) {
 }
 
 function check_input (access_token) {
-    return new Promise((accept, reject) => {
+    return new Promise((resolve, reject) => {
         if (!access_token) {
             return reject(new Error('Access token is required.'));
         }
 
-        accept(access_token);
+        resolve(access_token);
     });
 }
 
