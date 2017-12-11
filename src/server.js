@@ -46,7 +46,7 @@ function get_token_info (access_token) {
 
     if (_.has(cached_token_info_result, 'date_expiration')) {
         const date_expiration = moment.utc(cached_token_info_result.date_expiration, 'x');
-        const token_is_expired = date_expiration.isBefore(moment());
+        const token_is_expired = date_expiration.isSameOrBefore(moment());
 
         if (!token_is_expired) {
             return Promise.resolve(cached_token_info_result);

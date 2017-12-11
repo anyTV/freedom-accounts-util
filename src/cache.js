@@ -21,7 +21,7 @@ function get (category, key, fallback = null) {
     const cache_record = cache[category][key];
 
     if (!config.disable_caching && cache_record) {
-        if (!moment(cache_record.expiration).isBefore(moment())) {
+        if (!moment(cache_record.expiration).isSameOrBefore(moment())) {
             return cache_record.value;
         }
 
