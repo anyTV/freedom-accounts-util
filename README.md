@@ -16,13 +16,14 @@ yarn add freedom-accounts-util
 ```
 const accounts = require('freedom-accounts-util');
 
-accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300, disable_caching: false});
+accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300, disable_caching: false, retry_count: ''});
 // or
 accounts.configure(config.ACCOUNTS);
 ```
 Notes:
 * Client and server expiry are in seconds. 
 * `disable_caching` disables caching when true (useful for tests).
+* `retry_count` refers to the maximum number of retries for cuddle requests to accounts. Default value is 3 but it can be configured by service that uses it.
 
 ## Usage:
 For Express Servers:
