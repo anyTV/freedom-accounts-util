@@ -58,6 +58,7 @@ function get_token_info (access_token) {
     return cudl.get
         .to(config.base_url + config.path + '/oauth/tokeninfo')
         .send({access_token: access_token})
+        .max_retry(config.retry_count)
         .promise()
         .then(result => {
             if (result.scopes) {
