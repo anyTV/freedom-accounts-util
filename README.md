@@ -16,7 +16,16 @@ yarn add freedom-accounts-util
 ```
 const accounts = require('freedom-accounts-util');
 
-accounts.configure({base_url: '', path: '', client_id: '', client_secret: '', client_expiry: 300, server_expiry: 300, disable_caching: false, retry_count: ''});
+accounts.configure({
+    base_url: '',
+    path: '',
+    client_id: '',
+    client_secret: '',
+    client_expiry: 300,
+    server_expiry: 300,
+    disable_caching: false,
+    retry_count: 3}
+);
 // or
 accounts.configure(config.ACCOUNTS);
 ```
