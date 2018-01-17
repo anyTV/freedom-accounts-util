@@ -142,6 +142,27 @@ describe('generate_token', function () {
                 accounts_renock.isDone().should.equal(true);
             });
     });
+
+    it('should retry thrice on failure', function (done) {
+        let accounts_nocks = [
+            nocks.token('client_credentials').reply(500, {access_token: 'jrrtoken'}),
+            nocks.token('client_credentials').reply(500, {access_token: 'jrrtoken'}),
+            nocks.token('client_credentials').reply(500, {access_token: 'jrrtoken'})
+        ];
+
+        // Nock after max retries should not be called
+        let failing_nock = nocks.token('client_credentials').reply(500, {access_token: 'jrrtoken'});
+
+        accounts.generate_token(scopes)
+            .then(() => done(Error('Failing retry did not fail')))
+            .catch(() => {
+                accounts_nocks.forEach(accounts_nock => accounts_nock.isDone().should.equal(true));
+                failing_nock.isDone().should.equal(false);
+                done();
+            });
+    });
+
+
 });
 
 describe('refresh_token', function () {
