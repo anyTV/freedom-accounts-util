@@ -10,6 +10,7 @@ const config = {
     client_expiry: 300, // in seconds
     server_expiry: 300, // in seconds
     disable_caching: false,
+    retry_count: 3,
     configure: configure
 };
 

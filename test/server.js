@@ -67,9 +67,12 @@ describe('verify_scopes', function () {
         });
     });
 
-    it('should forward remote failure', function () {
-        let accounts_nock = nocks.token_info('notjrrtoken')
-            .reply(500, {message: 'random server error'});
+    it('should retry and forward remote failure', function () {
+        let accounts_nocks = [
+            nocks.token_info('notjrrtoken').reply(500, {message: 'random server error 1'}),
+            nocks.token_info('notjrrtoken').reply(500, {message: 'random server error 2'}),
+            nocks.token_info('notjrrtoken').reply(500, {message: 'random server error 3'})
+        ];
 
         const request = httpMocks.createRequest({
             method: 'GET',
@@ -81,10 +84,10 @@ describe('verify_scopes', function () {
         return accounts.verify_scopes(scopes)(
             request, null, error_handler
         ).catch(error => {
+            accounts_nocks.forEach(accounts_nock => accounts_nock.isDone().should.equal(true));
             error.should.have.property('message');
             error.message.should.be.a('string');
-            error.message.should.equal('random server error');
-            accounts_nock.isDone().should.equal(true);
+            error.message.should.equal('random server error 3');
         });
     });
 

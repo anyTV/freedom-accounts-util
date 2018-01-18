@@ -29,6 +29,7 @@ function generate_token (scopes) {
     return cudl.post
         .to(config.base_url + config.path + '/oauth/token')
         .send(payload)
+        .max_retry(config.retry_count)
         .promise()
         .then(result => {
             cache.set('client', scopes_string, result, config.client_expiry);
@@ -49,6 +50,7 @@ function refresh_token (refresh_token) {
     return cudl.post
         .to(config.base_url + config.path + '/oauth/token')
         .send(payload)
+        .max_retry(config.retry_count)
         .promise()
         .then(result => {
             if (scopes_string) {
