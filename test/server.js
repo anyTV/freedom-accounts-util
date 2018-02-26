@@ -135,6 +135,29 @@ describe('verify_scopes', function () {
         });
     });
 
+    it('should fail with tokens that have blank scopes', function () {
+        let accounts_nock = nocks.token_info('notjrrtoken')
+            .reply(200, {scopes: ''});
+
+        const request = httpMocks.createRequest({
+            method: 'GET',
+            url: '/test',
+            headers: {'Access-Token': 'notjrrtoken'}
+        });
+
+
+        return accounts.verify_scopes(scopes)(
+            request, null, error_handler
+        ).catch(error => {
+            error.should.have.property('message');
+            error.message.should.be.a('string');
+            error.message.should.equal(
+                'You need at least one of the ff. scopes to access this endpoint: ' + scopes.join(' ')
+            );
+            accounts_nock.isDone().should.equal(true);
+        });
+    });
+
     it('should succeed with proper provided access token', function () {
         let accounts_nock = nocks.token_info('jrrtoken')
             .reply(200, responses.valid_token_info);
