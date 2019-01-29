@@ -1,4 +1,4 @@
-'use strict';
+
 
 const cudl = require('cuddle');
 const _ = require('lodash');
@@ -38,13 +38,13 @@ function generate_token (scopes) {
         });
 }
 
-function refresh_token (refresh_token) {
-    const scopes_string = cache.find_key('client', {refresh_token});
+function refresh_token (_refresh_token) {
+    const scopes_string = cache.find_key('client', {_refresh_token});
     const payload = {
         client_id: config.client_id,
         client_secret: config.client_secret,
         grant_type: 'refresh_token',
-        refresh_token: refresh_token
+        refresh_token: _refresh_token
     };
 
     return cudl.post

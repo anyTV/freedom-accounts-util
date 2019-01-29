@@ -1,4 +1,4 @@
-'use strict';
+
 
 const moment = require('moment');
 const _ = require('lodash');
