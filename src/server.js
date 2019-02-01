@@ -1,4 +1,4 @@
-'use strict';
+
 
 const moment = require('moment');
 const cudl = require('cuddle');
@@ -71,7 +71,7 @@ function get_token_info (access_token) {
             _.has(error, 'response.message')
                 ? error.response
                 : error
-            )
+        )
         );
 
 }
@@ -80,6 +80,7 @@ function check_token_validity ({result, access_token, required_scopes}) {
     return new Promise((resolve, reject) => {
         if (!_.has(result, 'scopes')) {
             cache.forget('server', access_token);
+
             return reject(new Error('Something went wrong, server did not return scopes, please try again.'));
         }
 

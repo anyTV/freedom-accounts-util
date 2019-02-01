@@ -1,4 +1,4 @@
-'use strict';
+
 
 const accounts = require('../index.js');
 
@@ -214,14 +214,9 @@ describe('verify_scopes', function () {
         });
 
 
-        return accounts.verify_scopes(scopes)(
-            request, null, error_handler
-        ).then(() => {
-            accounts_nock.isDone().should.equal(true);
-        }).then(accounts.verify_scopes(scopes)(
-            request, null, error_handler
-        )).then(() => {
-            accounts_expired_nock.isDone().should.equal(true);
-        });
+        return accounts.verify_scopes(scopes)(request, null, error_handler)
+            .then(() => accounts_nock.isDone().should.equal(true))
+            .then(() => accounts.verify_scopes(scopes)(request, null, error_handler))
+            .then(() => accounts_expired_nock.isDone().should.equal(true));
     });
 });

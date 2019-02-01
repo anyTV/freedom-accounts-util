@@ -1,4 +1,4 @@
-'use strict';
+
 
 const config = require('../src/config');
 const cache = require('../src/cache');

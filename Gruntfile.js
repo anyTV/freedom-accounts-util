@@ -1,17 +1,17 @@
-'use strict';
+
 
 
 module.exports = (grunt) => {
 
     grunt.initConfig({
-        jshint: {
-            files: [
+        eslint: {
+            src: [
                 'Gruntfile.js',
                 'index.js',
                 'test/**/*.js'
             ],
             options: {
-                jshintrc: '.jshintrc'
+                configFile: '.eslintrc'
             }
         },
 
@@ -27,8 +27,8 @@ module.exports = (grunt) => {
 
         watch: {
             tests: {
-                files: ['<%= jshint.files %>'],
-                tasks: ['jshint', 'mochaTest'],
+                files: ['<%= eslint.src %>'],
+                tasks: ['eslint', 'mochaTest'],
                 options: {
                     spawn: false
                 }
@@ -36,11 +36,11 @@ module.exports = (grunt) => {
         }
     });
 
-    grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('gruntify-eslint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('test', ['jshint', 'mochaTest']);
-    grunt.registerTask('test-watch', ['jshint', 'mochaTest', 'watch:tests']);
+    grunt.registerTask('test', ['eslint', 'mochaTest']);
+    grunt.registerTask('test-watch', ['eslint', 'mochaTest', 'watch:tests']);
 
 };
