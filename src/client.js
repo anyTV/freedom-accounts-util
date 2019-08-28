@@ -68,9 +68,11 @@ function revoke_token (token, client_id, type = '') {
         client_id: client_id,
         type: type,
     };
+    const access_token = `Bearer ${token}`;
 
     return cudl.post
         .to(config.base_url + config.path + '/oauth/revoke')
+        .set_header('Authorization', access_token)
         .send(payload)
         .max_retry(config.retry_count)
         .promise()
