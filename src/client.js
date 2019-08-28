@@ -78,7 +78,7 @@ function revoke_token (token, client_id, type = '') {
         .promise()
         .then(result => {
             if (scopes_string) {
-                cache.forget('client', scopes_string, result, config.client_expiry);
+                cache.forget('client', token);
             }
 
             return result;

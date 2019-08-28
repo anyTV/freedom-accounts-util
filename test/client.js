@@ -31,6 +31,10 @@ const payloads = {
         client_secret: configuration.client_secret,
         grant_type: 'refresh_token',
         refresh_token: 'jrrrefreshtoken'
+    },
+    revoke_token: {
+        client_id: configuration.client_id,
+        type: 'application',
     }
 };
 
@@ -38,6 +42,11 @@ const nocks = {
     token: payload => {
         return nock(configuration.base_url)
             .post(configuration.path + '/oauth/token', payloads[payload]);
+    },
+
+    revoke_token: payload => {
+        return nock(configuration.base_url)
+            .post(configuration.path + '/oauth/revoke', payloads[payload]);
     }
 };
 
@@ -250,6 +259,57 @@ describe('refresh_token', function () {
                 result.refresh_token.should.be.a('string');
                 result.refresh_token.should.equal('jrrrefreshtoken');
                 accounts_rerefresh_nock.isDone().should.equal(true);
+            });
+    });
+});
+
+describe('revoke_token', function () {
+    accounts.configure(configuration);
+
+    beforeEach(function () {
+        accounts.clear_cache('client');
+        nock.cleanAll();
+    });
+
+    it('should properly revoke an specific access token', function () {
+        let accounts_nock = nocks.token('client_credentials')
+            .reply(200, {access_token: 'uploadaccesstoken'});
+
+        let accounts_revoke_token_nock = nocks.revoke_token('revoke_token', 'uploadaccesstoken')
+            .reply(200, 'tokenremoved');
+
+        return accounts.generate_token(scopes)
+            .then(({access_token}) => {
+                accounts.revoke_token(access_token, payloads.revoke_token.client_id)
+                    .then(result => {
+                        access_token.should.be.a.string('string');
+                        access_token.should.equal('uploadaccesstoken');
+                        result.should.be.a.string('string');
+                        result.should.equal('tokenremoved');
+                        accounts_revoke_token_nock .isDone().should.equal(true);
+                        accounts_nock.isDone().should.equal(true);
+                    });
+            });
+    });
+
+    it('should properly revoke an application access', function () {
+        let accounts_nock = nocks.token('client_credentials')
+            .reply(200, {access_token: 'applicationaccesstoken'});
+
+        let accounts_revoke_token_nock = nocks.revoke_token('revoke_token', 'applicationaccesstoken', 'application')
+            .reply(200, 'applicationaccessremoved');
+
+        return accounts.generate_token(scopes)
+            .then(({access_token}) => {
+                accounts.revoke_token(access_token, payloads.revoke_token.client_id, 'application')
+                    .then(result => {
+                        access_token.should.be.a.string('string');
+                        access_token.should.equal('applicationaccesstoken');
+                        result.should.be.a.string('string');
+                        result.should.equal('applicationaccessremoved');
+                        accounts_revoke_token_nock .isDone().should.equal(true);
+                        accounts_nock.isDone().should.equal(true);
+                    });
             });
     });
 });
