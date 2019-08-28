@@ -8,7 +8,8 @@ const cache = require('./cache');
 
 module.exports = {
     generate_token,
-    refresh_token
+    refresh_token,
+    revoke_token
 };
 
 function generate_token (scopes) {
@@ -55,6 +56,27 @@ function refresh_token (_refresh_token) {
         .then(result => {
             if (scopes_string) {
                 cache.set('client', scopes_string, result, config.client_expiry);
+            }
+
+            return result;
+        });
+}
+
+function revoke_token (token, client_id, type = '') {
+    const scopes_string = cache.find_key('client', {token});
+    const payload = {
+        client_id: client_id,
+        type: type,
+    };
+
+    return cudl.post
+        .to(config.base_url + config.path + '/oauth/revoke')
+        .send(payload)
+        .max_retry(config.retry_count)
+        .promise()
+        .then(result => {
+            if (scopes_string) {
+                cache.forget('client', scopes_string, result, config.client_expiry);
             }
 
             return result;
