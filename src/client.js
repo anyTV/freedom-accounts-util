@@ -67,7 +67,7 @@ function revoke_token (token, client_id, type = '') {
     const server_key = cache.find_key('server', {token});
     const payload = {
         client_id: client_id,
-        type: type,
+        type
     };
     const access_token = `Bearer ${token}`;
 
