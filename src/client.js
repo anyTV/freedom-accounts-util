@@ -63,7 +63,8 @@ function refresh_token (_refresh_token) {
 }
 
 function revoke_token (token, client_id, type = '') {
-    const scopes_string = cache.find_key('client', {token});
+    const client_key = cache.find_key('client', {token});
+    const server_key = cache.find_key('server', {token});
     const payload = {
         client_id: client_id,
         type: type,
@@ -77,9 +78,9 @@ function revoke_token (token, client_id, type = '') {
         .max_retry(config.retry_count)
         .promise()
         .then(result => {
-            if (scopes_string) {
-                cache.forget('client', token);
-                cache.forget('server', token);
+            if (key) {
+                cache.forget('client', client_key);
+                cache.forget('server', server_key);
             }
 
             return result;
