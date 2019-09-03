@@ -62,9 +62,14 @@ function refresh_token (_refresh_token) {
         });
 }
 
-function revoke_token (token, client_id, type = '') {
+function revoke_token (
+    token,
+    client_id,
+    type = '',
+    category = 'server'
+) {
     const payload = {
-        client_id: client_id,
+        client_id,
         type
     };
     const access_token = `Bearer ${token}`;
@@ -76,15 +81,10 @@ function revoke_token (token, client_id, type = '') {
         .max_retry(config.retry_count)
         .promise()
         .then(result => {
-            const client_key = cache.find_key('client', {token});
-            const server_key = cache.find_key('server', {token});
+            const _cache = cache.get(category, token);
 
-            if (client_key) {
-                cache.forget('client', client_key);
-            }
-
-            if (server_key) {
-                cache.forget('server', server_key);
+            if (_cache) {
+                cache.forget(category, token);
             }
 
             return result;
