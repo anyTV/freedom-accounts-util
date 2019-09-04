@@ -9,7 +9,8 @@ const cache = require('./cache');
 module.exports = {
     generate_token,
     refresh_token,
-    revoke_token
+    revoke_token,
+    remove_cache_only,
 };
 
 function generate_token (scopes) {
@@ -17,6 +18,7 @@ function generate_token (scopes) {
     const cached_token_result = cache.get('client', scopes_string);
 
     if (cached_token_result) {
+        console.log('CACHED TOKEN', cached_token_result);
         return Promise.resolve(cached_token_result);
     }
 
@@ -74,19 +76,23 @@ function revoke_token (
     };
     const access_token = `Bearer ${token}`;
 
-    return cudl.post
-        .to(config.base_url + config.path + '/oauth/revoke')
-        .set_header('Authorization', access_token)
-        .send(payload)
-        .max_retry(config.retry_count)
-        .promise()
-        .then(result => {
-            const _cache = cache.get(category, token);
-
-            if (_cache) {
-                cache.forget(category, token);
-            }
-
-            return result;
+    return Promise.resolve(remove_cache_only('', token, category))
+        .then(() => {
+            cudl.post
+                .to(config.base_url + config.path + '/oauth/revoke')
+                .set_header('Authorization', access_token)
+                .send(payload)
+                .max_retry(config.retry_count)
+                .promise();
         });
+}
+
+function remove_cache_only (res, token, category = 'client',) {
+    const _cache = cache.get(category, token);
+
+    if (_cache) {
+        cache.forget(category, token);
+    }
+
+    return res;
 }
