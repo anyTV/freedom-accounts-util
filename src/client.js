@@ -18,7 +18,6 @@ function generate_token (scopes) {
     const cached_token_result = cache.get('client', scopes_string);
 
     if (cached_token_result) {
-        console.log('CACHED TOKEN', cached_token_result);
         return Promise.resolve(cached_token_result);
     }
 
@@ -76,7 +75,7 @@ function revoke_token (
     };
     const access_token = `Bearer ${token}`;
 
-    return Promise.resolve(remove_cache_only('', token, category))
+    return Promise.resolve(remove_cache_only(token, category))
         .then(() => {
             cudl.post
                 .to(config.base_url + config.path + '/oauth/revoke')
@@ -87,12 +86,12 @@ function revoke_token (
         });
 }
 
-function remove_cache_only (res, token, category = 'client',) {
+function remove_cache_only (token, category = 'client',) {
     const _cache = cache.get(category, token);
 
     if (_cache) {
         cache.forget(category, token);
     }
 
-    return res;
+    return _cache;
 }
